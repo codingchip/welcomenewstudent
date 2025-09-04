@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>姓名查找工具</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 25px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .search-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: #ecf0f1;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        input {
+            padding: 12px 18px;
+            font-size: 17px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            margin-right: 12px;
+            width: 250px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 17px;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #image-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 25px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 5px solid #fff;
+        }
+        #target-image {
+            max-width: 100%;
+            display: block;
+            border-radius: 8px;
+        }
+        .highlight-box {
+            position: absolute;
+            border: 3px solid #e74c3c;
+            background-color: rgba(231, 76, 60, 0.25);
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 10;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+        .highlighted-text {
+            position: absolute;
+            background-color: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            font-size: 15px;
+            border-radius: 4px;
+            transform: translateY(-100%);
+            pointer-events: none;
+            z-index: 20;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+        }
+        .instructions {
+            margin-top: 25px;
+            color: #34495e;
+            font-size: 15px;
+            text-align: left;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        .loading {
+            display: none;
+            margin: 15px 0;
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+        .results-info {
+            margin: 15px 0;
+            padding: 12px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            display: none;
+            font-size: 16px;
+        }
+        .no-results {
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            display: none;
+            font-size: 16px;
+        }
+        .examples {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👋 你好 新同学！</h1>
+
+        <div class="search-container">
+            <input type="text" id="name-input" placeholder="输入要查找的姓名">
+            <button onclick="searchName()">查找</button>
+            <div class="examples">尝试: 张三, 李四, 王五, 刘兆煜, 赵彩如</div>
+        </div>
+
+        <div class="loading" id="loading">正在加载数据，请稍候...</div>
+        <div class="results-info" id="results-info"></div>
+        <div class="no-results" id="no-results"></div>
+
+        <div id="image-container">
+            <img id="target-image" src="aba.jpg" alt="学生名单">
+        </div>
+
+        <div class="instructions">
+            <h3>使用说明：</h3>
+            <p>1. 在输入框中输入要查找的姓名（支持部分匹配）</p>
+            <p>2. 点击"查找"按钮，系统将高亮显示包含该姓名的文本区域</p>
+            <p>3. 红色框表示找到的文本位置，左上角会显示匹配的姓名</p>
+            <p>4. 注意：由于数据限制，高亮的是包含姓名的整个文本块</p>
+        </div>
+    </div>
+
+    <script>
+        // 示例数据 - 实际应该从服务器获取
+        const exampleData = {
+            "萧晧怀陈梓": {
+                "left": 1784,
+                "top": 1618,
+                "width": 113,
+                "height": 25
+            },
+            "林宇萱石瑞龄": {
+                "left": 1773,
+                "top": 1650,
+                "width": 123,
+                "height": 25
+            },
+            "吕安喆吴瑗伶": {
+                "left": 1766,
+                "top": 1681,
+                "width": 131,
+                "height": 25
+            },
+            "刘兆煜赵彩如": {
+                "left": 1756,
+                "top": 1712,
+                "width": 137,
+                "height": 25
+            },
+            "曹非航宇张令宜": {
+                "left": 1746,
+                "top": 1743,
+                "width": 152,
+                "height": 25
+            }
+        };
+
+        //let nameData = exampleData; // 实际应从服务器获取
+        //let dataLoaded = true; // 示例数据已加载
+
+        // 实际使用时取消注释以下代码，并注释掉上面的exampleData
+
+        let nameData = null;
+        let dataLoaded = false;
+
+        // 显示加载提示
+        document.getElementById('loading').style.display = 'block';
+
+        // 加载预处理好的JSON数据
+        fetch('name_positions.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('网络响应不正常');
+                }
+                return response.json();
+            })
+            .then(data => {
+                nameData = data;
+                dataLoaded = true;
+                document.getElementById('loading').style.display = 'none';
+                console.log('JSON数据加载成功');
+            })
+            .catch(error => {
+                console.error('加载JSON数据时出错:', error);
+                document.getElementById('loading').textContent = '数据加载失败，请刷新页面重试';
+            });
+
+
+        function searchName() {
+            if (!dataLoaded) {
+                alert('数据尚未加载完成，请稍后再试');
+                return;
+            }
+
+            const inputName = document.getElementById('name-input').value.trim();
+            if (!inputName) {
+                alert('请输入姓名');
+                return;
+            }
+
+            // 清除之前的框选
+            const existingBoxes = document.querySelectorAll('.highlight-box, .highlighted-text');
+            existingBoxes.forEach(box => box.remove());
+
+            // 隐藏之前的消息
+            document.getElementById('results-info').style.display = 'none';
+            document.getElementById('no-results').style.display = 'none';
+
+            const img = document.getElementById('target-image');
+            const scaleX = img.naturalWidth / img.width;
+            const scaleY = img.naturalHeight / img.height;
+
+            let foundCount = 0;
+
+            // 遍历所有键，查找包含输入姓名的文本
+            for (const [text, location] of Object.entries(nameData)) {
+                // 检查文本是否包含输入的姓名
+                if (text.includes(inputName)) {
+                    foundCount++;
+
+                    const left = location.left / scaleX;
+                    const top = location.top / scaleY;
+                    const width = location.width / scaleX;
+                    const height = location.height / scaleY;
+
+                    // 创建红色框选区域
+                    const box = document.createElement('div');
+                    box.className = 'highlight-box';
+                    box.style.left = `${left}px`;
+                    box.style.top = `${top}px`;
+                    box.style.width = `${width}px`;
+                    box.style.height = `${height}px`;
+                    document.getElementById('image-container').appendChild(box);
+
+                    // 创建姓名标签
+                    const label = document.createElement('div');
+                    label.className = 'highlighted-text';
+                    label.textContent = inputName;
+                    label.style.left = `${left}px`;
+                    label.style.top = `${top}px`;
+                    document.getElementById('image-container').appendChild(label);
+                }
+            }
+
+            if (foundCount > 0) {
+                const resultsInfo = document.getElementById('results-info');
+                resultsInfo.textContent = `找到 ${foundCount} 处包含 "${inputName}" 的文本区域`;
+                resultsInfo.style.display = 'block';
+            } else {
+                const noResults = document.getElementById('no-results');
+                noResults.textContent = `未找到包含 "${inputName}" 的文本区域`;
+                noResults.style.display = 'block';
+            }
+        }
+
+        // 添加按Enter键搜索的功能
+        document.getElementById('name-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchName();
+            }
+        });
+
+        // 图片加载完成后显示提示
+        document.getElementById('target-image').addEventListener('load', function() {
+            console.log('图片加载完成');
+        });
+    </script>
+</body>
+</html>
