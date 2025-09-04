@@ -4,15 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>姓名查找工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
             text-align: center;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             padding: 15px;
             min-height: 100vh;
-            margin: 0;
+            line-height: 1.6;
         }
+
         .container {
             max-width: 100%;
             margin: 0 auto;
@@ -20,14 +28,16 @@
             border-radius: 12px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            box-sizing: border-box;
+            position: relative;
         }
+
         h1 {
             color: #2c3e50;
             margin-bottom: 20px;
             font-size: 1.8rem;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
+
         .search-container {
             margin: 20px 0;
             padding: 15px;
@@ -35,27 +45,30 @@
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
+
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 12px;
             margin-bottom: 15px;
         }
+
         input {
             padding: 14px 16px;
             font-size: 16px;
             border: 2px solid #bdc3c7;
             border-radius: 8px;
             width: 100%;
-            box-sizing: border-box;
             transition: border-color 0.3s;
             -webkit-appearance: none;
         }
+
         input:focus {
             border-color: #3498db;
             outline: none;
             box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
         }
+
         button {
             padding: 14px 20px;
             font-size: 16px;
@@ -68,28 +81,103 @@
             box-shadow: 0 3px 5px rgba(0,0,0,0.1);
             width: 100%;
         }
+
         button:hover, button:focus {
             transform: translateY(-2px);
             box-shadow: 0 5px 7px rgba(0,0,0,0.15);
         }
+
         button:active {
             transform: translateY(0);
         }
+
+        .image-viewer {
+            position: relative;
+            margin-top: 20px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 3px solid #fff;
+            max-width: 100%;
+            touch-action: none;
+        }
+
         #image-container {
             position: relative;
             display: inline-block;
-            margin-top: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 3px solid #fff;
-            max-width: 100%;
+            transform-origin: 0 0;
+            transition: transform 0.1s ease;
+            cursor: grab;
         }
+
+        #image-container.dragging {
+            cursor: grabbing;
+        }
+
         #target-image {
-            max-width: 100%;
             display: block;
-            border-radius: 8px;
+            max-width: 100%;
+            height: auto;
         }
+
+        .image-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .zoom-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .zoom-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #3498db;
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .reset-btn {
+            padding: 12px 20px;
+            background: #2c3e50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-btn:hover {
+            background: #1a252f;
+            transform: translateY(-2px);
+        }
+
         .highlight-box {
             position: absolute;
             border: 2px solid #e74c3c;
@@ -100,6 +188,7 @@
             transition: all 0.3s ease;
             border-radius: 3px;
         }
+
         .highlighted-text {
             position: absolute;
             background-color: #e74c3c;
@@ -117,6 +206,7 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+
         .instructions {
             margin-top: 20px;
             color: #34495e;
@@ -127,12 +217,14 @@
             border-radius: 8px;
             border-left: 4px solid #3498db;
         }
+
         .loading {
             display: none;
             margin: 12px 0;
             color: #7f8c8d;
             font-size: 15px;
         }
+
         .results-info {
             margin: 12px 0;
             padding: 10px;
@@ -142,6 +234,7 @@
             display: none;
             font-size: 15px;
         }
+
         .no-results {
             margin: 12px 0;
             padding: 10px;
@@ -151,6 +244,7 @@
             display: none;
             font-size: 15px;
         }
+
         .examples {
             margin-top: 15px;
             font-size: 13px;
@@ -164,17 +258,21 @@
                 max-width: 1000px;
                 padding: 25px;
             }
+
             .input-group {
                 flex-direction: row;
                 align-items: center;
             }
+
             input {
                 width: 250px;
                 margin-right: 12px;
             }
+
             button {
                 width: auto;
             }
+
             h1 {
                 font-size: 2.2rem;
             }
@@ -185,15 +283,42 @@
             body {
                 padding: 10px;
             }
+
             .container {
                 padding: 15px;
             }
+
             h1 {
                 font-size: 1.6rem;
             }
+
             input, button {
                 padding: 12px;
             }
+
+            .zoom-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+
+            .reset-btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+
+            .image-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        .drag-instruction {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+            font-style: italic;
+            display: none;
         }
     </style>
 </head>
@@ -216,8 +341,28 @@
         <div class="results-info" id="results-info"></div>
         <div class="no-results" id="no-results"></div>
 
-        <div id="image-container">
-            <img id="target-image" src="aba.jpg" alt="学生名单">
+        <div class="image-viewer" id="image-viewer">
+            <div id="image-container">
+                <img id="target-image" src="aba.jpg" alt="学生名单">
+            </div>
+        </div>
+
+        <div class="image-controls">
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoom-out" title="缩小">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button class="zoom-btn" id="zoom-in" title="放大">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <button class="reset-btn" id="reset-view">
+                <i class="fas fa-sync-alt"></i> 重置视图
+            </button>
+        </div>
+
+        <div class="drag-instruction" id="drag-instruction">
+            提示：图片已放大，可以拖动查看不同区域
         </div>
 
         <div class="instructions">
@@ -225,8 +370,10 @@
             <p>1. 在输入框中输入要查找的姓名（支持部分匹配）</p>
             <p>2. 点击"查找"按钮，系统将高亮显示包含该姓名的文本区域</p>
             <p>3. 红色框表示找到的文本位置，左上角会显示匹配的姓名</p>
-            <p>4. 注意：由于数据限制，高亮的是包含姓名的整个文本块，并且由于名字可能被分段排开，搜索时可以尝试单独搜索1~2个字来排查确认</p>
-            <p>5. 注意意：若是怎么样都搜不到姓名，并不代表没有你的名字，而是技术限制没能成功识别位置，可以反馈至tlr250@163.com</p>
+            <p>4. 使用放大/缩小按钮可以调整图片视图</p>
+            <p>5. 图片放大后可以拖动查看不同区域</p>
+            <p>6. 注意：由于数据限制，高亮的是包含姓名的整个文本块，并且由于名字可能被分段排开，搜索时可以尝试单独搜索1~2个字来排查确认</p>
+            <p>7. 注意：若是怎么样都搜不到姓名，并不代表没有你的名字，而是技术限制没能成功识别位置，可以反馈至tlr250@163.com</p>
         </div>
     </div>
 
@@ -267,6 +414,12 @@
 
         //let nameData = exampleData; // 实际应从服务器获取
         //let dataLoaded = true; // 示例数据已加载
+        let currentSearchTerm = '';
+        let currentScale = 1;
+        let currentPosition = { x: 0, y: 0 };
+        let isDragging = false;
+        let startX, startY;
+
 
         // 实际使用时取消注释以下代码，并注释掉上面的exampleData
 
@@ -296,6 +449,134 @@
             });
 
 
+        // 初始化事件监听
+        function initEvents() {
+            // 缩放功能
+            document.getElementById('zoom-in').addEventListener('click', () => {
+                zoomImage(0.2);
+            });
+
+            document.getElementById('zoom-out').addEventListener('click', () => {
+                zoomImage(-0.2);
+            });
+
+            document.getElementById('reset-view').addEventListener('click', resetImageView);
+
+            // 鼠标拖动事件
+            const imageContainer = document.getElementById('image-container');
+
+            // 鼠标事件
+            imageContainer.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+
+            // 触摸事件
+            imageContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+            imageContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+            imageContainer.addEventListener('touchend', handleTouchEnd);
+        }
+
+        // 初始化
+        window.onload = function() {
+            initEvents();
+        };
+
+        // 触摸事件处理
+        function handleTouchStart(e) {
+            if (e.touches.length === 1) {
+                // 单指触摸 - 拖动
+                e.preventDefault();
+                startX = e.touches[0].clientX - currentPosition.x;
+                startY = e.touches[0].clientY - currentPosition.y;
+                isDragging = true;
+                document.getElementById('image-container').classList.add('dragging');
+            } else if (e.touches.length === 2) {
+                // 双指触摸 - 缩放 (这里不实现缩放，只实现拖动)
+                e.preventDefault();
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+
+            if (e.touches.length === 1) {
+                e.preventDefault();
+                const x = e.touches[0].clientX - startX;
+                const y = e.touches[0].clientY - startY;
+
+                currentPosition.x = x;
+                currentPosition.y = y;
+
+                updateImageTransform();
+            }
+        }
+
+        function handleTouchEnd() {
+            isDragging = false;
+            document.getElementById('image-container').classList.remove('dragging');
+        }
+
+        // 鼠标拖动事件处理
+        function startDrag(e) {
+            if (currentScale <= 1) return; // 只在放大时允许拖动
+
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX - currentPosition.x;
+            startY = e.clientY - currentPosition.y;
+            document.getElementById('image-container').classList.add('dragging');
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+
+            e.preventDefault();
+            const x = e.clientX - startX;
+            const y = e.clientY - startY;
+
+            currentPosition.x = x;
+            currentPosition.y = y;
+
+            updateImageTransform();
+        }
+
+        function endDrag() {
+            isDragging = false;
+            document.getElementById('image-container').classList.remove('dragging');
+        }
+
+        function zoomImage(scaleFactor) {
+            const oldScale = currentScale;
+            currentScale += scaleFactor;
+
+            // 限制缩放范围
+            if (currentScale < 0.5) currentScale = 0.5;
+            if (currentScale > 3) currentScale = 3;
+
+            // 应用缩放
+            updateImageTransform();
+
+            // 显示/隐藏拖动提示
+            const dragInstruction = document.getElementById('drag-instruction');
+            if (currentScale > 1) {
+                dragInstruction.style.display = 'block';
+            } else {
+                dragInstruction.style.display = 'none';
+            }
+        }
+
+        function updateImageTransform() {
+            document.getElementById('image-container').style.transform =
+                `translate(${currentPosition.x}px, ${currentPosition.y}px) scale(${currentScale})`;
+        }
+
+        function resetImageView() {
+            currentScale = 1;
+            currentPosition = { x: 0, y: 0 };
+            updateImageTransform();
+            document.getElementById('drag-instruction').style.display = 'none';
+        }
+
         function searchName() {
             if (!dataLoaded) {
                 alert('数据尚未加载完成，请稍后再试');
@@ -307,6 +588,8 @@
                 alert('请输入姓名');
                 return;
             }
+
+            currentSearchTerm = inputName;
 
             // 清除之前的框选
             const existingBoxes = document.querySelectorAll('.highlight-box, .highlighted-text');
@@ -321,12 +604,17 @@
             const scaleY = img.naturalHeight / img.height;
 
             let foundCount = 0;
+            let firstMatch = null;
 
             // 遍历所有键，查找包含输入姓名的文本
             for (const [text, location] of Object.entries(nameData)) {
                 // 检查文本是否包含输入的姓名
                 if (text.includes(inputName)) {
                     foundCount++;
+
+                    if (!firstMatch) {
+                        firstMatch = location;
+                    }
 
                     const left = location.left / scaleX;
                     const top = location.top / scaleY;
@@ -356,6 +644,25 @@
                 const resultsInfo = document.getElementById('results-info');
                 resultsInfo.textContent = `找到 ${foundCount} 处包含 "${inputName}" 的文本区域`;
                 resultsInfo.style.display = 'block';
+
+                // 自动放大并定位到第一个匹配区域
+                setTimeout(() => {
+                    if (firstMatch) {
+                        const img = document.getElementById('target-image');
+                        const scaleX = img.naturalWidth / img.width;
+                        const scaleY = img.naturalHeight / img.height;
+
+                        const centerX = (firstMatch.left / scaleX + firstMatch.width / scaleX / 2) - window.innerWidth / 4;
+                        const centerY = (firstMatch.top / scaleY + firstMatch.height / scaleY / 2) -22;
+
+                        currentScale = 1.8;
+                        currentPosition.x = -centerX * currentScale;
+                        currentPosition.y = -centerY * currentScale;
+
+                        updateImageTransform();
+                        document.getElementById('drag-instruction').style.display = 'block';
+                    }
+                }, 500);
             } else {
                 const noResults = document.getElementById('no-results');
                 noResults.textContent = `未找到包含 "${inputName}" 的文本区域`;
